@@ -4,7 +4,7 @@ finish_queue* CreateFinishQueue()
 {
 	finish_queue* fnsQueue = malloc(sizeof(finish_queue));
 	if (!fnsQueue)	return NULL;
-	fnsQueue->head_PCB = createProcess("Head Node", -1, 0,0);
+	fnsQueue->head_PCB = createEmptyProcess("Head Node");
 	return fnsQueue;
 }
 
@@ -27,21 +27,23 @@ Status insert_FinishQueue(finish_queue* fnsQueue, PCB* pcb)
 	if (!pcb || !fnsQueue)	return fail;
 	pcb->next_PCB = fnsQueue->head_PCB->next_PCB;
 	fnsQueue->head_PCB->next_PCB = pcb;
-	pcb->status = Wait;
+	pcb->status = Finish;
 	return success;
 }
 
 void showFinishQueue(finish_queue* Queue)
 {
+	printf("=======================================完成队列=====================================\n");
 	PCB* process = Queue->head_PCB->next_PCB;
 	if (!process) {
-		printf("此时完成队列为空...没有已完成的任务\n");
+		printf("此时完成队列为空...没有已完成的进程\n");
+		printf("====================================================================================\n");
 		return;
 	}
-	printf("=========完成队列==============\n");
 	while (process)
 	{
 		printProcess(process);
 		process = process->next_PCB;
 	}
+	printf("====================================================================================\n");
 }

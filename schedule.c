@@ -1,4 +1,27 @@
 #include"schedule.h"
+
+
+
+
+PCB* createProcess(const char* pname, int priority, TimeSlice server_time, Time start, OS* os)
+{
+	PCB* process = (PCB*)malloc(sizeof(PCB));
+	if (!process)	return NULL;
+	process->pname = pname, process->priority = priority, process->nserver_time = server_time;
+	process->next_PCB = NULL, process->server_time = 0, process->arrive_time = start, process->end_time = 0;
+	process->status = PWait;
+	if (os) {
+		process->pid = ++os->Pcount;
+		os->dict[os->Pcount] = process;
+	}
+	else {
+		process->pid = 0;
+	}
+	return process;
+}
+
+
+
 void schedule(ready_queue* readyQueue)
 {
 	while (1)
@@ -20,7 +43,7 @@ void schedule(ready_queue* readyQueue)
 }
 #define maxsize  1
 char test[maxsize + 1][7] = { 0 };
-void random_schedule(OS* os,int flag)
+void random_schedule(OS* os)
 {
 	ready_queue* readyQueue = os->readyQueue;
 	finish_queue* fnsQueue = os->finishQueue;
@@ -40,26 +63,26 @@ void random_schedule(OS* os,int flag)
 	while (1)
 	{
 		if (cnt >= maxsize && empty(readyQueue))	break;
-		while( cnt < maxsize) {
+		printf("!!!!!!!!!!!!!!!!!!当前时间:%d-!!!!!!!!!!!!!!!!!!\n", T);
+		while(T && cnt < maxsize) {
 			double rd = 1.0*rand() / RAND_MAX;
 			if (rd < 0.7)	break;
-			if (rd >= 0.3) {
+			if (rd >= 0.5) {
 				int rd2 = 1 + (1.0 * rand() / RAND_MAX) * 10;
 				int rd3 = 1 + (1.0 * rand() / RAND_MAX) * 3;
-				PCB* newProcess = createProcess(test[cnt], rd2, rd3,T);
+				PCB* newProcess = createProcess(test[cnt], rd2, rd3,T, os);
 				insert(readyQueue, newProcess);
 				cnt++;
 			}
 		}
-		printf("\n\n\n=========当前时间:%5d===========\n", T);
-		fflush(stdin);
-		fflush(stdout);
-		printf("进程名   进程优先级   进程已服务时间   进程状态   进程到达时间  进程需要服务时间\n");
 		showReadyQueue(readyQueue);
-		PCB* process = NULL;
-		if (flag == 1)process = next_process_PSA(readyQueue);
-		else if (flag == 2)	process = next_process_FCFS(readyQueue);
+		showFinishQueue(fnsQueue);
+		printf("\n");
+		printf("!!!!!!!!!!!!!!!!!!当前时间:%d+!!!!!!!!!!!!!!!!!!\n",T);
+		PCB* process = process = next_process(readyQueue);
 		T++;
+		showReadyQueue(readyQueue);
+		showFinishQueue(fnsQueue);
 		if (!process)	continue;
 		Status status = ProcessRun(process);
 		if (status)
@@ -70,19 +93,8 @@ void random_schedule(OS* os,int flag)
 		}
 		else
 		{
-			process->priority += 1;
+			process->priority -= 1;
 			insert(readyQueue, process);
 		}
 	}
-}
-void initialize(OS* os)
-{
-	os->readyQueue = CreateReadyQueue();
-	os->finishQueue = CreateFinishQueue();
-}
-
-void end(OS* os)
-{
-	destroyFinishQueue(os->finishQueue);
-	//destroyReadyQueue(os->readyQueue);
 }

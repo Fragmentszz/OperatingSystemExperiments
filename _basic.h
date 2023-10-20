@@ -11,6 +11,6 @@
 #define Run 'R'
 #define Finish 'F'
 #define PWait 'P'
-
+#define INF 1000000
 typedef int Status;
 typedef char ProcessStatus;
